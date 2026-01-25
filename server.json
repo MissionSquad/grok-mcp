@@ -1,0 +1,33 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.guzus/grok-mcp",
+  "version": "0.2.0",
+  "title": "Grok X.com Search",
+  "description": "Search X.com (Twitter) posts, users, threads, and trends using xAI's Grok API. Provides real-time social media intelligence with comprehensive analysis modes.",
+  "websiteUrl": "https://github.com/guzus/grok-mcp",
+  "repository": {
+    "url": "https://github.com/guzus/grok-mcp",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "grok-mcp",
+      "version": "0.2.0",
+      "runtimeHint": "uvx",
+      "runtimeArguments": [],
+      "transport": {
+        "type": "stdio"
+      },
+      "environment": [
+        {
+          "name": "XAI_API_KEY",
+          "description": "Your xAI API key from console.x.ai",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
