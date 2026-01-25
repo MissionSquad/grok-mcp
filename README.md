@@ -11,6 +11,8 @@
 
 A [Model Context Protocol](https://modelcontextprotocol.io/) server that brings **real-time X/Twitter search** to Claude. Powered by xAI's Live Search API, it provides instant access to posts, users, threads, and trending topics.
 
+<img width="955" height="588" alt="Screenshot 2026-01-26 at 12 20 59 AM" src="https://github.com/user-attachments/assets/b2cc89a4-4ee3-42ca-a788-ad5921f3e811" />
+
 ## Why Grok MCP?
 
 - **Real-time data** - Access live X.com content, not cached or outdated information
