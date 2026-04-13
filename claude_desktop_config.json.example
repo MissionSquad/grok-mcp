@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "grok": {
+      "command": "npx",
+      "args": ["-y", "@missionsquad/mcp-grok"],
+      "env": {
+        "XAI_API_KEY": "your-xai-api-key"
+      }
+    }
+  }
+}

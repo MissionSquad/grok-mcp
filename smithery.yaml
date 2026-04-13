@@ -1,6 +1,3 @@
-# Smithery configuration for Grok MCP Server
-# https://smithery.ai
-
 startCommand:
   type: stdio
   configSchema:
@@ -13,8 +10,8 @@ startCommand:
       - xaiApiKey
   commandFunction: |-
     (config) => ({
-      command: "uvx",
-      args: ["grok-mcp"],
+      command: "npx",
+      args: ["-y", "@missionsquad/mcp-grok"],
       env: {
         XAI_API_KEY: config.xaiApiKey
       }
