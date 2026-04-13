@@ -1,30 +1,34 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.guzus/grok-mcp",
-  "version": "0.2.0",
-  "title": "Grok X.com Search",
-  "description": "Search X.com (Twitter) posts, users, threads, and trends using xAI's Grok API. Provides real-time social media intelligence with comprehensive analysis modes.",
-  "websiteUrl": "https://github.com/guzus/grok-mcp",
+  "name": "io.github.MissionSquad/mcp-grok",
+  "version": "0.3.0",
+  "title": "MissionSquad Grok X.com Search",
+  "description": "MissionSquad MCP server for searching X.com posts, users, threads, and trends with xAI's Grok API.",
+  "websiteUrl": "https://github.com/MissionSquad/mcp-grok",
   "repository": {
-    "url": "https://github.com/guzus/grok-mcp",
+    "url": "https://github.com/MissionSquad/mcp-grok",
     "source": "github"
   },
   "packages": [
     {
-      "registryType": "pypi",
-      "registryBaseUrl": "https://pypi.org",
-      "identifier": "grok-mcp",
-      "version": "0.2.0",
-      "runtimeHint": "uvx",
-      "runtimeArguments": [],
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@missionsquad/mcp-grok",
+      "version": "0.3.0",
+      "runtimeHint": "npx",
+      "runtimeArguments": [
+        "-y",
+        "@missionsquad/mcp-grok"
+      ],
       "transport": {
         "type": "stdio"
       },
-      "environment": [
+      "environmentVariables": [
         {
           "name": "XAI_API_KEY",
-          "description": "Your xAI API key from console.x.ai",
-          "isRequired": true,
+          "description": "Optional local fallback xAI API key. MissionSquad deployments should use the hidden secret xaiApiKey instead.",
+          "isRequired": false,
+          "format": "string",
           "isSecret": true
         }
       ]

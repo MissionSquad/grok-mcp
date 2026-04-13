@@ -1,157 +1,86 @@
-# Grok MCP Server
+# MissionSquad Grok MCP Server
 
-> Search X.com in real-time with xAI's Grok API - directly from Claude
+TypeScript MCP server for searching X.com with xAI Grok. This runtime is MissionSquad hidden-secret compatible and uses `@missionsquad/fastmcp`.
 
-[![PyPI version](https://img.shields.io/pypi/v/grok-mcp.svg)](https://pypi.org/project/grok-mcp/)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
-[![MCP](https://img.shields.io/badge/MCP-Compatible-purple.svg)](https://modelcontextprotocol.io/)
+## Runtime Contract
 
-<!-- MCP Registry verification: mcp-name: io.github.guzus/grok-mcp -->
+- Public tool schemas do not expose authentication fields.
+- MissionSquad injects the hidden `xaiApiKey` per tool call.
+- The server reads hidden values from `context.extraArgs`.
+- `XAI_API_KEY` remains available only as a local standalone fallback.
 
-A [Model Context Protocol](https://modelcontextprotocol.io/) server that brings **real-time X/Twitter search** to Claude. Powered by xAI's Live Search API, it provides instant access to posts, users, threads, and trending topics.
+## Tools
 
-<img width="955" height="588" alt="Screenshot 2026-01-26 at 12 20 59 AM" src="https://github.com/user-attachments/assets/b2cc89a4-4ee3-42ca-a788-ad5921f3e811" />
+- `search_posts`
+- `search_users`
+- `search_threads`
+- `get_trends`
+- `health_check`
 
-## Why Grok MCP?
+## Resources
 
-- **Real-time data** - Access live X.com content, not cached or outdated information
-- **Native Claude integration** - Works seamlessly with Claude Desktop and Claude Code
-- **Simple setup** - One command to install, one config to add
-- **Open source** - MIT licensed, community-driven
+- `grok://config`
+- `grok://health`
 
-## Quick Start
+`grok://health` can only use the local env fallback. Per-call MissionSquad hidden secrets are not available to MCP resources, so use the `health_check` tool to validate the active request configuration.
 
-### 1. Get an xAI API Key
-
-Get your API key from [console.x.ai](https://console.x.ai)
-
-### 2. Install
+## Local Development
 
 ```bash
-uvx grok-mcp
+npm install
+npm run build
+npm test
+XAI_API_KEY=your-api-key npm start
 ```
 
-### 3. Configure Claude
+## Claude Desktop Example
 
-**For Claude Code** - Add to `.mcp.json` in your project:
+Use env fallback outside MissionSquad:
 
 ```json
 {
   "mcpServers": {
     "grok": {
-      "command": "uvx",
-      "args": ["grok-mcp"],
+      "command": "npx",
+      "args": ["-y", "@missionsquad/mcp-grok"],
       "env": {
-        "XAI_API_KEY": "your-api-key"
+        "XAI_API_KEY": "your-xai-api-key"
       }
     }
   }
 }
 ```
 
-**For Claude Desktop** - Add to your config file:
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+## MissionSquad Registration
+
+Recommended MissionSquad server registration:
 
 ```json
 {
-  "mcpServers": {
-    "grok": {
-      "command": "uvx",
-      "args": ["grok-mcp"],
-      "env": {
-        "XAI_API_KEY": "your-api-key"
-      }
+  "name": "mcp-grok",
+  "transportType": "stdio",
+  "command": "node",
+  "args": ["/absolute/path/to/dist/server.js"],
+  "secretNames": ["xaiApiKey"],
+  "secretFields": [
+    {
+      "name": "xaiApiKey",
+      "label": "xAI API key",
+      "description": "xAI API key used to authenticate Grok API requests.",
+      "required": true,
+      "inputType": "password"
     }
-  }
+  ],
+  "enabled": true
 }
 ```
 
-### 4. Use It
+## Package Scripts
 
-Ask Claude things like:
-- "Search X for posts about AI"
-- "What's trending on X right now?"
-- "Find tweets from @elonmusk about Tesla"
-
-## Available Tools
-
-| Tool | Description |
-|------|-------------|
-| `search_posts` | Search posts with filters (handles, date range, analysis mode) |
-| `search_users` | Find user profiles |
-| `search_threads` | Discover conversation threads |
-| `get_trends` | Get trending topics by location |
-| `health_check` | Verify API connection |
-
-## Examples
-
-### Search Posts
-```
-Search X for posts about "AI safety" from the last week
-```
-
-### Filter by User
-```
-Find recent posts from @anthropic about Claude
-```
-
-### Get Trends
-```
-What are the trending topics in tech right now?
-```
-
-## Development
-
-```bash
-# Clone
-git clone https://github.com/guzus/grok-mcp.git
-cd grok-mcp
-
-# Install dependencies
-uv sync --dev
-
-# Run tests
-uv run pytest
-
-# Run locally
-XAI_API_KEY=your-key uv run python -m grok_mcp
-```
-
-## Architecture
-
-```
-src/grok_mcp/
-├── server.py           # MCP server implementation
-├── grok_client.py      # xAI Live Search API client
-├── search_tools.py     # Tool implementations
-├── response_formatter.py
-├── config.py
-└── exceptions.py
-```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+- `npm run build`
+- `npm test`
+- `npm run dev`
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Links
-
-- [PyPI Package](https://pypi.org/project/grok-mcp/)
-- [xAI API Docs](https://docs.x.ai/)
-- [MCP Protocol](https://modelcontextprotocol.io/)
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code)
-
----
-
-Built with [xAI Grok](https://x.ai/) and [Model Context Protocol](https://modelcontextprotocol.io/)
+MIT. See [LICENSE](LICENSE).
