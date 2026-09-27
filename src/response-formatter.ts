@@ -1,3 +1,5 @@
+import { ResponseParsingError, SearchError } from './errors.js'
+
 const URL_PATTERN = /https?:\/\/[^\s<>"{}|\\^`[\]]*/g
 const USERNAME_PATTERN = /@(\w+)/g
 const HASHTAG_PATTERN = /#(\w+)/g
@@ -44,6 +46,7 @@ export class ResponseFormatter {
     query: string
     analysisMode?: 'basic' | 'comprehensive'
   }): FormattedSearchResponse {
+    ResponseFormatter.validateResponse(options.rawResponse)
     const analysisMode = options.analysisMode ?? 'basic'
     const { content, citations } = ResponseFormatter.extractContent(options.rawResponse)
 
@@ -98,51 +101,96 @@ export class ResponseFormatter {
       .map((url) => url.replace(/[.,;:!?]+$/g, '')))]
   }
 
+  private static validateResponse(rawResponse: Record<string, unknown>): void {
+    const { status, error, incomplete_details: incompleteDetails } = rawResponse
+    if ((rawResponse.object === 'response' || 'output' in rawResponse) && status === undefined) {
+      throw new ResponseParsingError('xAI search response is missing its completion status.')
+    }
+    if (error != null || (status !== undefined && status !== 'completed')) {
+      const detail = isRecord(error) && typeof error.message === 'string'
+        ? error.message
+        : typeof error === 'string'
+          ? error
+          : isRecord(incompleteDetails) && typeof incompleteDetails.reason === 'string'
+            ? incompleteDetails.reason
+            : undefined
+      throw new SearchError(
+        `xAI search response ${typeof status === 'string' ? status : 'failed'}${detail ? `: ${detail}` : '.'}`,
+      )
+    }
+  }
+
   private static extractContent(rawResponse: Record<string, unknown>): { content: string; citations: Citation[] } {
-    const output = Array.isArray(rawResponse.output) ? rawResponse.output : undefined
-    if (output) {
-      for (const outputItem of output) {
-        if (!outputItem || typeof outputItem !== 'object' || outputItem.type !== 'message') {
+    const textParts: string[] = []
+    const citations = new Map<string, Citation>()
+    const addCitation = (url: unknown, title?: unknown): void => {
+      if (typeof url !== 'string') {
+        return
+      }
+      try {
+        const parsed = new URL(url)
+        if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+          return
+        }
+      } catch {
+        return
+      }
+      if (!citations.has(url)) {
+        citations.set(url, typeof title === 'string' ? { url, title } : { url })
+      }
+    }
+
+    if (Array.isArray(rawResponse.output)) {
+      for (const outputItem of rawResponse.output) {
+        if (!isRecord(outputItem) || outputItem.type !== 'message' ||
+          (outputItem.role !== undefined && outputItem.role !== 'assistant')) {
           continue
         }
 
-        const contentItems = Array.isArray(outputItem.content) ? outputItem.content : []
+        const contentItems: unknown[] = Array.isArray(outputItem.content) ? outputItem.content : []
         for (const contentItem of contentItems) {
-          if (!contentItem || typeof contentItem !== 'object' || contentItem.type !== 'output_text') {
+          if (!isRecord(contentItem)) {
             continue
           }
-
-          const content = typeof contentItem.text === 'string' ? contentItem.text : ''
+          if (contentItem.type === 'refusal') {
+            throw new SearchError(
+              typeof contentItem.refusal === 'string' ? contentItem.refusal : 'xAI refused the search request.',
+            )
+          }
+          if (contentItem.type !== 'output_text') {
+            continue
+          }
+          if (typeof contentItem.text === 'string' && contentItem.text.trim()) {
+            textParts.push(contentItem.text)
+          }
           const annotations: unknown[] = Array.isArray(contentItem.annotations) ? contentItem.annotations : []
-          const citations = annotations
-            .filter((annotation: unknown): annotation is { type: string; url?: string; title?: string } => {
-              return Boolean(
-                annotation &&
-                  typeof annotation === 'object' &&
-                  'type' in annotation &&
-                  annotation.type === 'url_citation'
-              )
-            })
-            .map((annotation: { url?: string; title?: string }) => ({
-              url: annotation.url,
-              title: annotation.title,
-            }))
-
-          return { content, citations }
+          for (const annotation of annotations) {
+            if (isRecord(annotation) && annotation.type === 'url_citation') {
+              addCitation(annotation.url, annotation.title)
+            }
+          }
         }
       }
-    }
-
-    const choices = Array.isArray(rawResponse.choices) ? rawResponse.choices : []
-    const firstChoice = choices[0]
-    if (firstChoice && typeof firstChoice === 'object') {
-      const message = firstChoice.message
-      if (message && typeof message === 'object' && typeof message.content === 'string') {
-        return { content: message.content, citations: [] }
+    } else {
+      // Preserve compatibility with older Chat Completions responses.
+      const choices: unknown[] = Array.isArray(rawResponse.choices) ? rawResponse.choices : []
+      const firstChoice = choices[0]
+      const message = isRecord(firstChoice) ? firstChoice.message : undefined
+      if (isRecord(message) && typeof message.content === 'string' && message.content.trim()) {
+        textParts.push(message.content)
       }
     }
 
-    return { content: '', citations: [] }
+    if (textParts.length === 0) {
+      throw new ResponseParsingError('xAI returned no usable search answer text; this does not indicate that no results were found.')
+    }
+
+    const responseCitations: unknown[] = Array.isArray(rawResponse.citations) ? rawResponse.citations : []
+    for (const citation of responseCitations) {
+      addCitation(citation)
+    }
+
+    return { content: textParts.join('\n\n'), citations: [...citations.values()] }
   }
 
   private static extractPosts(content: string): Array<Record<string, unknown>> {
@@ -272,4 +320,8 @@ export class ResponseFormatter {
 
     return metadata
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

@@ -8,6 +8,7 @@ TypeScript MCP server for searching X.com with xAI Grok. This runtime is Mission
 - MissionSquad injects the hidden `xaiApiKey` per tool call.
 - The server reads hidden values from `context.extraArgs`.
 - `XAI_API_KEY` remains available only as a local standalone fallback.
+- The default model is `grok-4.3`, xAI's documented replacement for the retired `grok-4-1-fast-reasoning`. Set `XAI_MODEL` in the server environment to select another model that supports X Search.
 
 ## Tools
 
@@ -16,6 +17,8 @@ TypeScript MCP server for searching X.com with xAI Grok. This runtime is Mission
 - `search_threads`
 - `get_trends`
 - `health_check`
+
+Search tools use xAI's Responses API with `x_search` and return the complete generated answer, including analysis and source links. Markdown formatting does not determine whether results exist. For posts, users, and threads, `max_results` is sent as a requested limit in the prompt; the provider determines the actual results returned. Empty, failed, or incomplete API responses are reported as tool errors rather than as zero matches.
 
 ## Resources
 

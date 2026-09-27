@@ -5,14 +5,14 @@ function createDefaults(overrides: Partial<AppConfig> = {}): AppConfig {
   return {
     defaultApiKey: undefined,
     defaultBaseUrl: 'https://api.x.ai/v1',
-    defaultModel: 'grok-4-1-fast-reasoning',
+    defaultModel: 'grok-4.3',
     maxRetries: 0,
     timeoutMs: 5_000,
     backoffFactor: 1.5,
     maxRequestsPerMinute: 60,
     burstLimit: 10,
     defaultMaxResults: 20,
-    userAgent: 'grok-mcp/0.3.0',
+    userAgent: 'grok-mcp/0.3.1',
     ...overrides,
   }
 }

@@ -1,95 +1,109 @@
 {
   "search_posts_success": {
-    "id": "chatcmpl-test-123",
-    "object": "chat.completion",
-    "created": 1703123456,
-    "model": "grok-beta",
-    "choices": [
+    "id": "resp-test-123",
+    "object": "response",
+    "status": "completed",
+    "error": null,
+    "created_at": 1703123456,
+    "model": "grok-4.3",
+    "output": [
       {
-        "index": 0,
-        "message": {
-          "role": "assistant",
-          "content": "Here are the search results for your query:\n\n1. @user1: Just posted about the latest AI developments. Exciting times ahead! #AI #Technology\n   Posted 2 hours ago | Likes: 45 | Retweets: 12\n\n2. @user2: Machine learning is revolutionizing how we approach data analysis.\n   Posted 4 hours ago | Likes: 23 | Retweets: 8\n\n3. @user3: The future of AI looks promising with recent breakthroughs in neural networks.\n   Posted 6 hours ago | Likes: 67 | Retweets: 21",
-          "tool_calls": [
-            {
-              "id": "call_123",
-              "type": "function",
-              "function": {
-                "name": "x_search",
-                "arguments": "{\"query\": \"AI technology\", \"max_results\": 20}"
-              }
-            }
-          ]
-        },
-        "finish_reason": "tool_calls"
+        "type": "message",
+        "role": "assistant",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "Here are the search results for your query:\n\n1. **@user1**: Just posted about the latest AI developments. Exciting times ahead! #AI #Technology\n   Posted 2 hours ago | Likes: 45 | Retweets: 12\n\n2. **@user2**: Machine learning is revolutionizing how we approach data analysis.\n   Posted 4 hours ago | Likes: 23 | Retweets: 8\n\n3. **@user3**: The future of AI looks promising with recent breakthroughs in neural networks.\n   Posted 6 hours ago | Likes: 67 | Retweets: 21",
+            "annotations": []
+          }
+        ]
       }
     ],
     "usage": {
-      "prompt_tokens": 150,
-      "completion_tokens": 200,
+      "input_tokens": 150,
+      "output_tokens": 200,
       "total_tokens": 350
     }
   },
   "search_users_success": {
-    "id": "chatcmpl-test-456",
-    "object": "chat.completion",
-    "created": 1703123456,
-    "model": "grok-beta",
-    "choices": [
+    "id": "resp-test-456",
+    "object": "response",
+    "status": "completed",
+    "error": null,
+    "created_at": 1703123456,
+    "model": "grok-4.3",
+    "output": [
       {
-        "index": 0,
-        "message": {
-          "role": "assistant",
-          "content": "Found several users related to your search:\n\n@ai_researcher - AI Research Scientist\n@techexpert - Technology Expert and Consultant\n@mlpractitioner - Machine Learning Practitioner\n@datascientist - Data Science Professional"
-        },
-        "finish_reason": "stop"
+        "type": "message",
+        "role": "assistant",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "Found several users related to your search:\n\n@ai_researcher - AI Research Scientist\n@techexpert - Technology Expert and Consultant\n@mlpractitioner - Machine Learning Practitioner\n@datascientist - Data Science Professional",
+            "annotations": []
+          }
+        ]
       }
     ],
     "usage": {
-      "prompt_tokens": 100,
-      "completion_tokens": 80,
+      "input_tokens": 100,
+      "output_tokens": 80,
       "total_tokens": 180
     }
   },
   "search_threads_success": {
-    "id": "chatcmpl-test-789",
-    "object": "chat.completion",
-    "created": 1703123456,
-    "model": "grok-beta",
-    "choices": [
+    "id": "resp-test-789",
+    "object": "response",
+    "status": "completed",
+    "error": null,
+    "created_at": 1703123456,
+    "model": "grok-4.3",
+    "output": [
       {
-        "index": 0,
-        "message": {
-          "role": "assistant",
-          "content": "Found a conversation thread about AI ethics:\n\nThread Type: conversation_thread\nParticipants: 5 users discussing the ethical implications of AI in healthcare\nSummary: A detailed discussion covering privacy concerns, algorithmic bias, and the need for transparency in AI decision-making processes."
-        },
-        "finish_reason": "stop"
+        "type": "message",
+        "role": "assistant",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "Found a conversation thread about AI ethics:\n\nThread Type: conversation_thread\nParticipants: 5 users discussing the ethical implications of AI in healthcare\nSummary: A detailed discussion covering privacy concerns, algorithmic bias, and the need for transparency in AI decision-making processes.",
+            "annotations": []
+          }
+        ]
       }
     ],
     "usage": {
-      "prompt_tokens": 120,
-      "completion_tokens": 90,
+      "input_tokens": 120,
+      "output_tokens": 90,
       "total_tokens": 210
     }
   },
   "get_trends_success": {
-    "id": "chatcmpl-test-101",
-    "object": "chat.completion",
-    "created": 1703123456,
-    "model": "grok-beta",
-    "choices": [
+    "id": "resp-test-101",
+    "object": "response",
+    "status": "completed",
+    "error": null,
+    "created_at": 1703123456,
+    "model": "grok-4.3",
+    "output": [
       {
-        "index": 0,
-        "message": {
-          "role": "assistant",
-          "content": "Current trending topics:\n\n1. #TechNews - Breaking technology news and updates\n2. #AI - Artificial Intelligence discussions trending\n3. #ClimateChange - Environmental discussions gaining momentum\n4. #Innovation - Latest innovations across industries\n5. #DigitalTransformation - Business transformation topics"
-        },
-        "finish_reason": "stop"
+        "type": "message",
+        "role": "assistant",
+        "status": "completed",
+        "content": [
+          {
+            "type": "output_text",
+            "text": "Current trending topics:\n\n1. #TechNews - Breaking technology news and updates\n2. #AI - Artificial Intelligence discussions trending\n3. #ClimateChange - Environmental discussions gaining momentum\n4. #Innovation - Latest innovations across industries\n5. #DigitalTransformation - Business transformation topics",
+            "annotations": []
+          }
+        ]
       }
     ],
     "usage": {
-      "prompt_tokens": 80,
-      "completion_tokens": 100,
+      "input_tokens": 80,
+      "output_tokens": 100,
       "total_tokens": 180
     }
   },

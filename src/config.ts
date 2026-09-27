@@ -4,14 +4,14 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const DEFAULT_BASE_URL = 'https://api.x.ai/v1'
-const DEFAULT_MODEL = 'grok-4-1-fast-reasoning'
+const DEFAULT_MODEL = 'grok-4.3'
 const DEFAULT_MAX_RETRIES = 3
 const DEFAULT_TIMEOUT_MS = 60_000
 const DEFAULT_BACKOFF_FACTOR = 1.5
 const DEFAULT_MAX_REQUESTS_PER_MINUTE = 60
 const DEFAULT_BURST_LIMIT = 10
 const DEFAULT_MAX_RESULTS = 20
-const USER_AGENT = 'grok-mcp/0.3.0'
+const USER_AGENT = 'grok-mcp/0.3.1'
 
 export interface AppConfig {
   defaultApiKey?: string
@@ -70,7 +70,7 @@ export function createAppConfigFromEnv(source: NodeJS.ProcessEnv): AppConfig {
   return {
     defaultApiKey: readOptionalEnvString(source.XAI_API_KEY),
     defaultBaseUrl: DEFAULT_BASE_URL,
-    defaultModel: DEFAULT_MODEL,
+    defaultModel: readOptionalEnvString(source.XAI_MODEL) ?? DEFAULT_MODEL,
     maxRetries: DEFAULT_MAX_RETRIES,
     timeoutMs: DEFAULT_TIMEOUT_MS,
     backoffFactor: DEFAULT_BACKOFF_FACTOR,

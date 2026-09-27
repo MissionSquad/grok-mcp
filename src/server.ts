@@ -9,7 +9,7 @@ routeConsoleStdoutToStderr()
 
 export const server = new FastMCP<undefined>({
   name: 'grok',
-  version: '0.3.0',
+  version: '0.3.1',
 })
 
 for (const tool of createToolDefinitions()) {

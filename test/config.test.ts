@@ -9,7 +9,7 @@ describe('config', () => {
 
     expect(config.defaultApiKey).toBe('env-key')
     expect(config.defaultBaseUrl).toBe('https://api.x.ai/v1')
-    expect(config.defaultModel).toBe('grok-4-1-fast-reasoning')
+    expect(config.defaultModel).toBe('grok-4.3')
   })
 
   it('prefers hidden xaiApiKey over env fallback', () => {
@@ -20,6 +20,18 @@ describe('config', () => {
     const resolved = resolveRequestConfig({ xaiApiKey: 'hidden-key' }, config)
 
     expect(resolved.apiKey).toBe('hidden-key')
+  })
+
+  it('uses a trimmed model override while preserving hidden authentication', () => {
+    const config = createAppConfigFromEnv({ XAI_MODEL: ' grok-4.7 ' })
+    const resolved = resolveRequestConfig({ xaiApiKey: 'hidden-key' }, config)
+
+    expect(resolved.model).toBe('grok-4.7')
+    expect(resolved.apiKey).toBe('hidden-key')
+  })
+
+  it('uses the default model for an empty override', () => {
+    expect(createAppConfigFromEnv({ XAI_MODEL: ' ' }).defaultModel).toBe('grok-4.3')
   })
 
   it('throws when the hidden xaiApiKey is the wrong type', () => {
