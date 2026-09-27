@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.MissionSquad/mcp-grok",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "title": "MissionSquad Grok X.com Search",
   "description": "MissionSquad MCP server for searching X.com posts, users, threads, and trends with xAI's Grok API.",
   "websiteUrl": "https://github.com/MissionSquad/mcp-grok",
@@ -14,7 +14,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@missionsquad/mcp-grok",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "runtimeHint": "npx",
       "runtimeArguments": [
         "-y",
@@ -30,6 +30,13 @@
           "isRequired": false,
           "format": "string",
           "isSecret": true
+        },
+        {
+          "name": "XAI_MODEL",
+          "description": "Optional model override. Defaults to grok-4.3; choose a model that supports X Search.",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": false
         }
       ]
     }

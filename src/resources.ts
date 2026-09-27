@@ -13,7 +13,7 @@ export function createResources(defaults: AppConfig = appConfig): Resource[] {
         text: JSON.stringify(
           {
             server_name: 'grok-search-mcp',
-            version: '0.3.0',
+            version: '0.3.1',
             model: defaults.defaultModel,
             base_url: defaults.defaultBaseUrl,
             max_retries: defaults.maxRetries,

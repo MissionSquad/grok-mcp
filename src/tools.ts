@@ -68,7 +68,7 @@ export function createToolDefinitions(defaults: AppConfig = appConfig): Tool<und
             analysisMode: args.analysis_mode,
           })
 
-          return formatPostsSummary(formatted, args.query)
+          return formatSearchSummary(formatted)
         }),
     },
     {
@@ -88,7 +88,7 @@ export function createToolDefinitions(defaults: AppConfig = appConfig): Tool<und
             query: args.query,
           })
 
-          return formatUsersSummary(formatted, args.query)
+          return formatSearchSummary(formatted)
         }),
     },
     {
@@ -108,7 +108,7 @@ export function createToolDefinitions(defaults: AppConfig = appConfig): Tool<und
             query: args.query,
           })
 
-          return formatThreadsSummary(formatted, args.query)
+          return formatSearchSummary(formatted)
         }),
     },
     {
@@ -127,7 +127,7 @@ export function createToolDefinitions(defaults: AppConfig = appConfig): Tool<und
             query: `trends_${args.location ?? 'global'}`,
           })
 
-          return formatTrendsSummary(formatted, args.location)
+          return formatSearchSummary(formatted)
         }),
     },
     {
@@ -190,101 +190,18 @@ function toToolUserError(error: unknown): UserError {
   return new UserError(String(error))
 }
 
-function formatPostsSummary(
+function formatSearchSummary(
   formatted: ReturnType<typeof ResponseFormatter.formatSearchResponse>,
-  query: string,
 ): string {
-  const posts = formatted.posts ?? []
+  // xAI returns a generated answer, not a structured list of posts. Never infer
+  // empty search results from our optional heuristic extraction of that prose.
+  const sources = formatted.citations
+    .map((citation) => citation.url)
+    .filter((url): url is string => typeof url === 'string' && !formatted.content.includes(url))
 
-  if (posts.length === 0) {
-    return `No posts found for query: ${query}`
-  }
-
-  let responseText = `Found ${posts.length} posts for query: ${query}\n\n`
-  for (const [index, post] of posts.slice(0, 5).entries()) {
-    responseText += `${index + 1}. ${String(post.content ?? 'No content')}\n`
-    if (typeof post.author === 'string') {
-      responseText += `   Author: ${post.author}\n`
-    }
-    if (typeof post.engagement === 'string') {
-      responseText += `   ${post.engagement}\n`
-    }
-    responseText += '\n'
-  }
-
-  return responseText.trimEnd()
-}
-
-function formatUsersSummary(
-  formatted: ReturnType<typeof ResponseFormatter.formatSearchResponse>,
-  query: string,
-): string {
-  const users = formatted.users ?? []
-
-  if (users.length === 0) {
-    return `No users found for query: ${query}`
-  }
-
-  let responseText = `Found ${users.length} users for query: ${query}\n\n`
-  for (const [index, user] of users.slice(0, 10).entries()) {
-    responseText += `${index + 1}. @${String(user.username ?? 'Unknown')}\n`
-    if (typeof user.profile_url === 'string') {
-      responseText += `   Profile: ${user.profile_url}\n`
-    }
-    responseText += '\n'
-  }
-
-  return responseText.trimEnd()
-}
-
-function formatThreadsSummary(
-  formatted: ReturnType<typeof ResponseFormatter.formatSearchResponse>,
-  query: string,
-): string {
-  const threads = formatted.threads ?? []
-
-  if (threads.length === 0) {
-    return `No conversation threads found for query: ${query}`
-  }
-
-  let responseText = `Found ${threads.length} conversation threads for query: ${query}\n\n`
-  for (const [index, thread] of threads.entries()) {
-    responseText += `${index + 1}. ${String(thread.type ?? 'Thread')}\n`
-    responseText += `   ${String(thread.summary ?? 'No summary available')}\n`
-    if (typeof thread.participant_count === 'number') {
-      responseText += `   Participants: ${thread.participant_count}\n`
-    }
-    responseText += '\n'
-  }
-
-  return responseText.trimEnd()
-}
-
-function formatTrendsSummary(
-  formatted: ReturnType<typeof ResponseFormatter.formatSearchResponse>,
-  location: string | undefined,
-): string {
-  const trends = formatted.trends ?? []
-  const locationText = location ? ` for ${location}` : ' (Global)'
-
-  if (trends.length === 0) {
-    return `No trending topics found for location: ${location ?? 'Global'}`
-  }
-
-  let responseText = `Trending topics${locationText}:\n\n`
-  for (const [index, trend] of trends.slice(0, 15).entries()) {
-    responseText += `${index + 1}. ${String(trend.topic ?? 'Unknown trend')}`
-    if (trend.category === 'hashtag' && typeof trend.hashtag === 'string') {
-      responseText += ` (${trend.hashtag})`
-    }
-    responseText += '\n'
-    if (typeof trend.description === 'string') {
-      responseText += `   ${trend.description}\n`
-    }
-    responseText += '\n'
-  }
-
-  return responseText.trimEnd()
+  return sources.length > 0
+    ? `${formatted.content}\n\nSources:\n${sources.map((url) => `- ${url}`).join('\n')}`
+    : formatted.content
 }
 
 function formatHealthCheckSummary(

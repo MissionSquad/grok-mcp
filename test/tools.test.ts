@@ -31,19 +31,21 @@ function createDefaults(overrides: Partial<AppConfig> = {}): AppConfig {
   return {
     defaultApiKey: undefined,
     defaultBaseUrl: 'https://api.x.ai/v1',
-    defaultModel: 'grok-4-1-fast-reasoning',
+    defaultModel: 'grok-4.3',
     maxRetries: 0,
     timeoutMs: 5_000,
     backoffFactor: 1.5,
     maxRequestsPerMinute: 60,
     burstLimit: 10,
     defaultMaxResults: 20,
-    userAgent: 'grok-mcp/0.3.0',
+    userAgent: 'grok-mcp/0.3.1',
     ...overrides,
   }
 }
 
 describe('tools', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
   it('exports the current tool surface', () => {
     const tools = createToolDefinitions()
 
@@ -92,7 +94,9 @@ describe('tools', () => {
       createContext({ xaiApiKey: 'hidden-key' }),
     )
 
-    expect(result).toContain('Found 3 posts')
+    expect(result).toContain('**@user1**')
+    expect(result).toContain('**@user3**')
+    expect(result).not.toContain('No posts found')
     expect(fetchImpl).toHaveBeenCalledTimes(1)
     expect(fetchImpl.mock.calls[0][1]?.headers).toEqual(
       expect.objectContaining({ Authorization: 'Bearer hidden-key' }),
@@ -105,6 +109,65 @@ describe('tools', () => {
 
     await expect(healthCheck.execute({}, createContext())).rejects.toBeInstanceOf(UserError)
     await expect(healthCheck.execute({}, createContext())).rejects.toThrow('Configure the hidden secret "xaiApiKey"')
+  })
+
+  it.each(['search_posts', 'search_users', 'search_threads', 'get_trends'])('preserves provider prose and sources in %s', async (name) => {
+    const answer = '| Name | Details |\n| --- | --- |\n| Example | Bitcoin discussion |'
+    const url = 'https://x.com/example/status/123'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      object: 'response',
+      status: 'completed',
+      output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: answer, annotations: [{ type: 'url_citation', url }] }] }],
+    }))))
+    const tool = createToolDefinitions(createDefaults({ defaultApiKey: 'env-key' })).find((tool) => tool.name === name)!
+
+    const result = await tool.execute({ query: 'bitcoin', max_results: 20, analysis_mode: 'basic' }, createContext())
+
+    expect(result).toBe(`${answer}\n\nSources:\n- ${url}`)
+  })
+
+  it('keeps all posts and comprehensive analysis instead of truncating at five', async () => {
+    const posts = Array.from({ length: 6 }, (_, i) => `${i + 1}. @user${i}: Bitcoin post ${i}`).join('\n\n')
+    const analysis = 'Sentiment: mixed. Key themes include adoption and volatility.'
+    const url = 'https://x.com/example/status/123'
+    const answer = `${posts}\n\n${analysis}\n\n[[1]](${url})`
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      status: 'completed',
+      output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: answer, annotations: [{ type: 'url_citation', url }] }] }],
+    }))))
+    const tool = createToolDefinitions(createDefaults({ defaultApiKey: 'env-key' })).find((tool) => tool.name === 'search_posts')!
+
+    expect(await tool.execute({ query: 'bitcoin', max_results: 20, analysis_mode: 'comprehensive' }, createContext())).toBe(answer)
+  })
+
+  it('preserves an explicit provider no-match answer', async () => {
+    const answer = 'No matching posts were found for this query and date range.'
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      status: 'completed', output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: answer }] }],
+    }))))
+    const tool = createToolDefinitions(createDefaults({ defaultApiKey: 'env-key' })).find((tool) => tool.name === 'search_posts')!
+
+    expect(await tool.execute({ query: 'bitcoin' }, createContext())).toBe(answer)
+  })
+
+  it.each([
+    { status: 'completed', output: [] },
+    { status: 'failed', error: { message: 'Search unavailable' } },
+    { status: 'incomplete', incomplete_details: { reason: 'max_output_tokens' } },
+  ])('surfaces unusable provider responses as MCP errors: %j', async (body) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(body))))
+    const tool = createToolDefinitions(createDefaults({ defaultApiKey: 'env-key' })).find((tool) => tool.name === 'search_posts')!
+
+    await expect(tool.execute({ query: 'bitcoin' }, createContext())).rejects.toBeInstanceOf(UserError)
+  })
+
+  it('surfaces an unavailable model as an error instead of no posts', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      error: { message: 'The requested model is unavailable.' },
+    }), { status: 404 })))
+    const tool = createToolDefinitions(createDefaults({ defaultApiKey: 'env-key' })).find((tool) => tool.name === 'search_posts')!
+
+    await expect(tool.execute({ query: 'bitcoin' }, createContext())).rejects.toThrow('The requested model is unavailable.')
   })
 
   it('formats trends output', async () => {
@@ -129,7 +192,7 @@ describe('tools', () => {
       createContext(),
     )
 
-    expect(result).toContain('Trending topics for Global')
+    expect(result).toContain('Current trending topics:')
     expect(result).toContain('TechNews')
   })
 })

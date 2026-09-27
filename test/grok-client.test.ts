@@ -22,14 +22,14 @@ function createConfig(): ResolvedRequestConfig {
   return {
     apiKey: 'test-api-key',
     baseUrl: 'https://api.x.ai/v1',
-    model: 'grok-4-1-fast-reasoning',
+    model: 'grok-4.3',
     maxRetries: 2,
     timeoutMs: 1_000,
     backoffFactor: 1.5,
     maxRequestsPerMinute: 60,
     burstLimit: 10,
     defaultMaxResults: 20,
-    userAgent: 'grok-mcp/0.3.0',
+    userAgent: 'grok-mcp/0.3.1',
   }
 }
 
@@ -40,7 +40,7 @@ describe('GrokClient', () => {
     expect(client.getHeaders()).toEqual({
       Authorization: 'Bearer test-api-key',
       'Content-Type': 'application/json',
-      'User-Agent': 'grok-mcp/0.3.0',
+      'User-Agent': 'grok-mcp/0.3.1',
     })
   })
 
@@ -56,7 +56,7 @@ describe('GrokClient', () => {
     const client = new GrokClient(createConfig(), { fetchImpl })
     const result = await client.searchPosts({ query: 'AI technology', maxResults: 10 })
 
-    expect(result.id).toBe('chatcmpl-test-123')
+    expect(result.id).toBe('resp-test-123')
     expect(fetchImpl).toHaveBeenCalledTimes(1)
   })
 
